@@ -1,8 +1,10 @@
 Route = Backbone.Model.extend
 	defaults:
-		src: null
-		dest: null
+		source: null
+		target: null
+		weight: 0
 
-	initialize: (src, dest)->
-		this.src = src
-		this.dest = dest
+	initialize: (source, target, weight=1)->
+		this.source = source
+		this.target = target
+		this.weight = weight

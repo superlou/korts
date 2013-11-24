@@ -1,5 +1,5 @@
 (function() {
-  var Device, Net, RandomNet, Route, Router, Server, Trunk, color, force, height, net, node, randomInt, svg, width;
+  var Device, Net, RandomNet, Route, Router, Server, Trunk, color, force, height, link, net, node, randomInt, svg, width;
 
   randomInt = function(min, max) {
     return min + Math.floor(Math.random() * (max - min + 1));
@@ -26,12 +26,17 @@
 
   Route = Backbone.Model.extend({
     defaults: {
-      src: null,
-      dest: null
+      source: null,
+      target: null,
+      weight: 0
     },
-    initialize: function(src, dest) {
-      this.src = src;
-      return this.dest = dest;
+    initialize: function(source, target, weight) {
+      if (weight == null) {
+        weight = 1;
+      }
+      this.source = source;
+      this.target = target;
+      return this.weight = weight;
     }
   });
 
@@ -59,16 +64,15 @@
       devices = (function() {
         var _i, _ref, _results;
         _results = [];
-        for (i = _i = 0, _ref = randomInt(2, 8); 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        for (i = _i = 0, _ref = randomInt(3, 8); 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
           _results.push(new Router());
         }
         return _results;
       })();
       this.devices = devices;
-      console.log(this.routes);
       _results = [];
       for (i = _i = 0, _ref = this.devices.length - 1; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-        route = new Route(this.devices[i], this.devices[i + 1]);
+        route = new Route(this.devices[i], this.devices[i + 1], 100);
         _results.push(this.routes.push(route));
       }
       return _results;
@@ -80,18 +84,18 @@
       return this.generateRandomNet();
     },
     generateRandomNet: function() {
-      var i, net, trunk, trunks_count, _i;
-      trunks_count = randomInt(1, 4);
-      console.log("Trunks: " + trunks_count);
+      var i, net, trunk, trunks_count, _i, _results;
+      trunks_count = randomInt(1, 3);
       net = {
         devices: [],
         routes: []
       };
+      _results = [];
       for (i = _i = 0; 0 <= trunks_count ? _i < trunks_count : _i > trunks_count; i = 0 <= trunks_count ? ++_i : --_i) {
         trunk = new Trunk();
-        net = this.appendNets([trunk]);
+        _results.push(net = this.appendNets([trunk]));
       }
-      return net;
+      return _results;
     }
   });
 
@@ -103,9 +107,13 @@
 
   color = d3.scale.category20();
 
-  force = d3.layout.force().charge(-120).linkDistance(100).size([width, height]).nodes(net.devices).start();
+  force = d3.layout.force().charge(-400).linkDistance(40).size([width, height]).nodes(net.devices).links(net.routes).start();
 
   svg = d3.select('body').append('svg').attr('width', width).attr('height', height);
+
+  link = svg.selectAll(".link").data(net.routes).enter().append("line").attr('class', 'link').style('stroke-width', function(d) {
+    return Math.sqrt(d.weight);
+  });
 
   node = svg.selectAll(".node").data(net.devices).enter().append("g");
 
@@ -118,6 +126,18 @@
   });
 
   force.on('tick', function() {
+    link.attr("x1", function(d) {
+      return d.source.x;
+    });
+    link.attr("y1", function(d) {
+      return d.source.y;
+    });
+    link.attr("x2", function(d) {
+      return d.target.x;
+    });
+    link.attr("y2", function(d) {
+      return d.target.y;
+    });
     return node.attr("transform", function(d) {
       return "translate(" + d.x + "," + d.y + ")";
     });
