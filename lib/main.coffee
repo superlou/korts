@@ -43,7 +43,4 @@ force.on 'tick', ->
     # link.attr("x2", (d)->d.target.x)
     # link.attr("y2", (d)->d.target.y)
 
-    #node.attr("cx", (d)->d.x)
-    #node.attr("cy", (d)->d.y)
-
     node.attr("transform", (d)->return "translate(" + d.x + "," + d.y + ")");
