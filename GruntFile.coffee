@@ -8,6 +8,8 @@ module.exports = (grunt)->
                 files:
                     'build/main.js': [
                         'lib/utils.coffee'
+                        'lib/device.coffee'
+                        'lib/route.coffee'
                         'lib/net.coffee'
                         'lib/trunk.coffee'
                         'lib/random-net.coffee'

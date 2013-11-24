@@ -4,11 +4,6 @@ Trunk = Net.extend
 
     generateTrunk: ()->
         devices = for i in [0..randomInt(2,8)]
-            {
-                "id":   uuid.v1()
-                "name": ""
-                "type": "router"
-                "owner": 0
-            }
+            new Router()
 
         this.devices = devices

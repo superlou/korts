@@ -1,9 +1,39 @@
 (function() {
-  var Net, RandomNet, Trunk, color, force, height, link, net, node, randomInt, svg, width;
+  var Device, Net, RandomNet, Route, Router, Server, Trunk, color, force, height, link, net, node, randomInt, svg, width;
 
   randomInt = function(min, max) {
     return min + Math.floor(Math.random() * (max - min + 1));
   };
+
+  Device = Backbone.Model.extend({
+    defaults: function() {
+      return {
+        id: uuid.v1(),
+        name: "",
+        type: "",
+        owner: 0
+      };
+    }
+  });
+
+  Router = Device.extend({
+    type: "router"
+  });
+
+  Server = Device.extend({
+    type: "server"
+  });
+
+  Route = Backbone.Model.extend({
+    defaults: {
+      src: null,
+      dest: null
+    },
+    initialize: function(src, dest) {
+      this.src = src;
+      return this.dest = dest;
+    }
+  });
 
   Net = Backbone.Model.extend({
     devices: [],
@@ -30,12 +60,7 @@
         var _i, _ref, _results;
         _results = [];
         for (i = _i = 0, _ref = randomInt(2, 8); 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-          _results.push({
-            "id": uuid.v1(),
-            "name": "",
-            "type": "router",
-            "owner": 0
-          });
+          _results.push(new Router());
         }
         return _results;
       })();
