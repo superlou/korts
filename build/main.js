@@ -1,65 +1,69 @@
 (function() {
-  var color, force, generateBackbone, generateNet, height, link, mergeNets, net, node, randomInt, svg, width;
+  var Net, RandomNet, Trunk, color, force, height, link, net, node, randomInt, svg, width;
 
   randomInt = function(min, max) {
     return min + Math.floor(Math.random() * (max - min + 1));
   };
 
-  generateBackbone = function() {
-    var devices, i, net;
-    net = {
-      devices: [],
-      routes: []
-    };
-    devices = (function() {
-      var _i, _ref, _results;
+  Net = Backbone.Model.extend({
+    devices: [],
+    routes: [],
+    appendNets: function(nets) {
+      var net, _i, _len, _results;
       _results = [];
-      for (i = _i = 0, _ref = randomInt(2, 8); 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-        _results.push({
-          "id": uuid.v1(),
-          "name": "",
-          "type": "router",
-          "owner": 0
-        });
+      for (_i = 0, _len = nets.length; _i < _len; _i++) {
+        net = nets[_i];
+        this.devices = this.devices.concat(net.devices);
+        _results.push(this.routes = this.routes.concat(net.routes));
       }
       return _results;
-    })();
-    net.devices = devices;
-    return net;
-  };
-
-  mergeNets = function(nets) {
-    var devices, net, resultNet, routes, _i, _len;
-    devices = [];
-    routes = [];
-    for (_i = 0, _len = nets.length; _i < _len; _i++) {
-      net = nets[_i];
-      devices = devices.concat(net.devices);
-      routes = routes.concat(net.routes);
     }
-    resultNet = {
-      "devices": devices,
-      "routes": routes
-    };
-    return resultNet;
-  };
+  });
 
-  generateNet = function() {
-    var backbone, backbones_count, i, net, _i;
-    backbones_count = randomInt(1, 4);
-    console.log("Backbones: " + backbones_count);
-    net = {
-      devices: [],
-      routes: []
-    };
-    for (i = _i = 0; 0 <= backbones_count ? _i < backbones_count : _i > backbones_count; i = 0 <= backbones_count ? ++_i : --_i) {
-      backbone = generateBackbone();
-      net = mergeNets([net, backbone]);
+  Trunk = Net.extend({
+    initialize: function() {
+      return this.generateTrunk();
+    },
+    generateTrunk: function() {
+      var devices, i;
+      devices = (function() {
+        var _i, _ref, _results;
+        _results = [];
+        for (i = _i = 0, _ref = randomInt(2, 8); 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+          _results.push({
+            "id": uuid.v1(),
+            "name": "",
+            "type": "router",
+            "owner": 0
+          });
+        }
+        return _results;
+      })();
+      return this.devices = devices;
     }
-    return net;
-  };
+  });
 
-  net = generateNet();
+  RandomNet = Net.extend({
+    initialize: function() {
+      return this.generateRandomNet();
+    },
+    generateRandomNet: function() {
+      var i, net, trunk, trunks_count, _i;
+      trunks_count = randomInt(1, 4);
+      console.log("Trunks: " + trunks_count);
+      net = {
+        devices: [],
+        routes: []
+      };
+      for (i = _i = 0; 0 <= trunks_count ? _i < trunks_count : _i > trunks_count; i = 0 <= trunks_count ? ++_i : --_i) {
+        trunk = new Trunk();
+        net = this.appendNets([trunk]);
+      }
+      return net;
+    }
+  });
+
+  net = new RandomNet();
 
   width = $(window).width();
 

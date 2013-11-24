@@ -1,54 +1,50 @@
 randomInt = (min, max)->
     min + Math.floor(Math.random() * (max - min + 1))
 
-generateBackbone = ()->
-    net = {
-        devices: []
-        routes: []
-    }
+Net = Backbone.Model.extend
+    devices: []
+    routes: []
 
-    devices = for i in [0..randomInt(2,8)]
-        {
-            "id":   uuid.v1()
-            "name": ""
-            "type": "router"
-            "owner": 0
+    appendNets: (nets)->
+        for net in nets
+            this.devices = this.devices.concat(net.devices)
+            this.routes = this.routes.concat(net.routes)
+
+Trunk = Net.extend
+    initialize: ->
+        this.generateTrunk()
+
+    generateTrunk: ()->
+        devices = for i in [0..randomInt(2,8)]
+            {
+                "id":   uuid.v1()
+                "name": ""
+                "type": "router"
+                "owner": 0
+            }
+
+        this.devices = devices
+
+RandomNet = Net.extend
+    initialize: ->
+        this.generateRandomNet()
+
+    generateRandomNet: ->
+        trunks_count = randomInt(1, 4)
+        console.log "Trunks: " + trunks_count
+
+        net = {
+            devices: []
+            routes: []
         }
 
-    net.devices = devices
-    net
+        for i in [0...trunks_count]
+            trunk = new Trunk()
+            net = this.appendNets([trunk])
 
-mergeNets = (nets)->
-    devices = []
-    routes = []
+        net
 
-    for net in nets
-        devices = devices.concat(net.devices)
-        routes = routes.concat(net.routes)
-
-    resultNet = {
-        "devices": devices
-        "routes": routes
-    }
-
-    resultNet
-
-generateNet = ->
-    backbones_count = randomInt(1, 4)
-    console.log "Backbones: " + backbones_count
-
-    net = {
-        devices: []
-        routes: []
-    }
-
-    for i in [0...backbones_count]
-        backbone = generateBackbone()
-        net = mergeNets([net, backbone])
-
-    net
-
-net = generateNet()
+net = new RandomNet()
 
 width = $(window).width()
 height = $(window).height()
