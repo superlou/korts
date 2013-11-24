@@ -7,3 +7,8 @@ Trunk = Net.extend
             new Router()
 
         this.devices = devices
+        console.log this.routes
+
+        for i in [0...this.devices.length-1]
+            route = new Route(this.devices[i], this.devices[i+1])
+            this.routes.push(route)
