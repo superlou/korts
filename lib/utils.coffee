@@ -1,5 +1,10 @@
+seed = 10
+random = ->
+	x = Math.sin(seed++) * 10000;
+	return x - Math.floor(x)
+
 randomInt = (min, max)->
-    min + Math.floor(Math.random() * (max - min + 1))
+    min + Math.floor(random() * (max - min + 1))
 
 randomFrom = (array)->
-	array[Math.floor(Math.random() * array.length)]
+	array[Math.floor(random() * array.length)]

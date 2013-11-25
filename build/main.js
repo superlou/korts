@@ -1,12 +1,20 @@
 (function() {
-  var Client, Device, Net, RandomNet, Route, Router, Server, Trunk, color, force, height, link, net, node, randomFrom, randomInt, svg, width, zoom;
+  var Client, Device, Net, RandomNet, Route, Router, Server, Trunk, color, force, height, link, net, node, random, randomFrom, randomInt, seed, svg, width, zoom;
+
+  seed = 10;
+
+  random = function() {
+    var x;
+    x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+  };
 
   randomInt = function(min, max) {
-    return min + Math.floor(Math.random() * (max - min + 1));
+    return min + Math.floor(random() * (max - min + 1));
   };
 
   randomFrom = function(array) {
-    return array[Math.floor(Math.random() * array.length)];
+    return array[Math.floor(random() * array.length)];
   };
 
   Device = Backbone.Model.extend({
