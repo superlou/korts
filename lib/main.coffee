@@ -1,8 +1,26 @@
 net = new RandomNet()
 
-visible_net = new Net()
-visible_net.devices.push randomFrom(net.clients())
+visibleNet = new Net()
+visibleNet.get('devices').push randomFrom(net.clients())
 
+executeCommand = (cmd)->
+    tokens = cmd.split(' ')
+    if tokens[0] == 'scan'
+        centerDevice = visibleNet.findDeviceByName(tokens[1])
+        scannedNet = net.netAround(centerDevice)
+        visibleNet.appendNet(scannedNet)
+
+
+$('.command').keypress (e)->
+    if e.which == 13
+        command = $('.command').val()
+        executeCommand(command)
+        $('.command').val('')
+
+
+# ============
+# Configure D3
+# ============
 width = $(window).width()
 height = $(window).height()
 
@@ -12,8 +30,8 @@ force = d3.layout.force()
     .charge(-400)
     .linkDistance(20)
     .size([width, height])
-    .nodes(visible_net.devices)
-    .links(visible_net.routes)
+    .nodes(visibleNet.get('devices'))
+    .links(visibleNet.get('routes'))
     .start()
 
 zoom = ->
@@ -26,13 +44,13 @@ svg = d3.select('body').append('svg')
     .append('g')
 
 link = svg.selectAll(".link")
-    .data(visible_net.routes)
+    .data(visibleNet.get('routes'))
     .enter().append("line")
     .attr('class', 'link')
     .style('stroke-width', (d)->Math.sqrt(d.weight))
 
 node = svg.selectAll(".node")
-    .data(visible_net.devices)
+    .data(visibleNet.get('devices'))
     .enter().append("g")
 
 node.append("circle")
@@ -50,7 +68,7 @@ node.append("circle")
 node.append("text")
     .attr("dx", 12)
     .attr("dy", "0.35em")
-    .text((d)->d.name)
+    .text((d)->d.get('name'))
 
 force.on 'tick', ->
     link.attr("x1", (d)->d.source.x)

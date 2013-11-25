@@ -1,5 +1,5 @@
 (function() {
-  var Client, Device, Net, RandomNet, Route, Router, Server, Trunk, color, force, height, link, net, node, random, randomFrom, randomInt, seed, svg, visible_net, width, zoom;
+  var Client, Device, Net, RandomNet, Route, Router, Server, Trunk, color, executeCommand, force, height, link, net, node, random, randomFrom, randomInt, seed, svg, visibleNet, width, zoom;
 
   seed = 10;
 
@@ -52,38 +52,57 @@
       }
       this.source = source;
       this.target = target;
-      return this.weight = weight;
+      this.weight = weight;
+      this.set('source', source);
+      this.set('target', target);
+      return this.set('weight', weight);
     }
   });
 
   Net = Backbone.Model.extend({
-    devices: [],
-    routes: [],
+    defaults: {
+      devices: [],
+      routes: []
+    },
+    appendNet: function(net) {
+      this.set('devices', this.get('devices').concat(net.get('devices')));
+      return this.set('routes', this.get('routes').concat(net.get('routes')));
+    },
     appendNets: function(nets) {
       var net, _i, _len, _results;
       _results = [];
       for (_i = 0, _len = nets.length; _i < _len; _i++) {
         net = nets[_i];
-        this.devices = this.devices.concat(net.devices);
-        _results.push(this.routes = this.routes.concat(net.routes));
+        _results.push(this.appendNet(net));
       }
       return _results;
     },
     nameDevices: function() {
       var device, i, _i, _len, _ref, _results;
       i = 1;
-      _ref = this.devices;
+      _ref = this.get('devices');
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         device = _ref[_i];
-        device.name = i;
+        device.set('name', String(i));
         _results.push(i++);
       }
       return _results;
     },
+    findDeviceByName: function(name) {
+      var device, _i, _len, _ref;
+      _ref = this.get('devices');
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        device = _ref[_i];
+        if (device.get('name') === name) {
+          return device;
+        }
+      }
+      return null;
+    },
     clients: function() {
       var device, _i, _len, _ref, _results;
-      _ref = this.devices;
+      _ref = this.get('devices');
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         device = _ref[_i];
@@ -92,6 +111,27 @@
         }
       }
       return _results;
+    },
+    netAround: function(device) {
+      var neighborDevices, neighborRoutes, route, _i, _len, _ref;
+      neighborRoutes = [];
+      neighborDevices = [];
+      _ref = this.get('routes');
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        route = _ref[_i];
+        if (route.get('source') === device) {
+          neighborRoutes.push(route);
+          neighborDevices.push(route.get('target'));
+        }
+        if (route.get('target') === device) {
+          neighborRoutes.push(route);
+          neighborDevices.push(route.get('source'));
+        }
+      }
+      return new Net({
+        devices: neighborDevices,
+        routes: neighborRoutes
+      });
     }
   });
 
@@ -109,11 +149,11 @@
         }
         return _results;
       })();
-      this.devices = devices;
+      this.set('devices', devices);
       _results = [];
-      for (i = _i = 0, _ref = this.devices.length - 1; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
-        route = new Route(this.devices[i], this.devices[i + 1], 100);
-        _results.push(this.routes.push(route));
+      for (i = _i = 0, _ref = this.get('devices').length - 1; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
+        route = new Route(this.get('devices')[i], this.get('devices')[i + 1], 100);
+        _results.push(this.get('routes').push(route));
       }
       return _results;
     }
@@ -127,34 +167,30 @@
     generateRandomNet: function() {
       var client, clients, device1, device2, i, net, route, router, routers, trunk, trunk_router, trunks, trunks_count, _i, _j, _k, _l, _len, _ref, _ref1, _results;
       trunks_count = randomInt(1, 3);
-      net = {
-        devices: [],
-        routes: []
-      };
       trunks = [];
       for (i = _i = 0; 0 <= trunks_count ? _i < trunks_count : _i > trunks_count; i = 0 <= trunks_count ? ++_i : --_i) {
         trunk = new Trunk();
-        net = this.appendNets([trunk]);
+        net = this.appendNet(trunk);
         trunks.push(trunk);
       }
       for (i = _j = 0, _ref = trunks_count - 1; 0 <= _ref ? _j < _ref : _j > _ref; i = 0 <= _ref ? ++_j : --_j) {
         router = new Router();
-        this.devices.push(router);
-        device1 = randomFrom(trunks[i].devices);
-        device2 = randomFrom(trunks[i + 1].devices);
+        this.get('devices').push(router);
+        device1 = randomFrom(trunks[i].get('devices'));
+        device2 = randomFrom(trunks[i + 1].get('devices'));
         route = new Route(device1, router, 10);
-        this.routes.push(route);
+        this.get('routes').push(route);
         route = new Route(device2, router, 10);
-        this.routes.push(route);
+        this.get('routes').push(route);
       }
       routers = [];
       for (i = _k = 0, _ref1 = randomInt(1, trunks_count) * 3; 0 <= _ref1 ? _k < _ref1 : _k > _ref1; i = 0 <= _ref1 ? ++_k : --_k) {
         router = new Router();
-        this.devices.push(router);
+        this.get('devices').push(router);
         routers.push(router);
-        trunk_router = randomFrom(randomFrom(trunks).devices);
+        trunk_router = randomFrom(randomFrom(trunks).get('devices'));
         route = new Route(router, trunk_router, 10);
-        this.routes.push(route);
+        this.get('routes').push(route);
       }
       clients = [];
       _results = [];
@@ -166,9 +202,9 @@
           for (i = _m = 3, _ref2 = randomInt(3, 12); 3 <= _ref2 ? _m < _ref2 : _m > _ref2; i = 3 <= _ref2 ? ++_m : --_m) {
             client = new Client();
             clients.push(client);
-            this.devices.push(client);
+            this.get('devices').push(client);
             route = new Route(client, router);
-            _results1.push(this.routes.push(route));
+            _results1.push(this.get('routes').push(route));
           }
           return _results1;
         }).call(this));
@@ -179,9 +215,28 @@
 
   net = new RandomNet();
 
-  visible_net = new Net();
+  visibleNet = new Net();
 
-  visible_net.devices.push(randomFrom(net.clients()));
+  visibleNet.get('devices').push(randomFrom(net.clients()));
+
+  executeCommand = function(cmd) {
+    var centerDevice, scannedNet, tokens;
+    tokens = cmd.split(' ');
+    if (tokens[0] === 'scan') {
+      centerDevice = visibleNet.findDeviceByName(tokens[1]);
+      scannedNet = net.netAround(centerDevice);
+      return visibleNet.appendNet(scannedNet);
+    }
+  };
+
+  $('.command').keypress(function(e) {
+    var command;
+    if (e.which === 13) {
+      command = $('.command').val();
+      executeCommand(command);
+      return $('.command').val('');
+    }
+  });
 
   width = $(window).width();
 
@@ -189,7 +244,7 @@
 
   color = d3.scale.category20();
 
-  force = d3.layout.force().charge(-400).linkDistance(20).size([width, height]).nodes(visible_net.devices).links(visible_net.routes).start();
+  force = d3.layout.force().charge(-400).linkDistance(20).size([width, height]).nodes(visibleNet.get('devices')).links(visibleNet.get('routes')).start();
 
   zoom = function() {
     return svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
@@ -197,11 +252,11 @@
 
   svg = d3.select('body').append('svg').attr('width', width).attr('height', height).call(d3.behavior.zoom().scaleExtent([0.1, 8]).on("zoom", zoom)).append('g');
 
-  link = svg.selectAll(".link").data(visible_net.routes).enter().append("line").attr('class', 'link').style('stroke-width', function(d) {
+  link = svg.selectAll(".link").data(visibleNet.get('routes')).enter().append("line").attr('class', 'link').style('stroke-width', function(d) {
     return Math.sqrt(d.weight);
   });
 
-  node = svg.selectAll(".node").data(visible_net.devices).enter().append("g");
+  node = svg.selectAll(".node").data(visibleNet.get('devices')).enter().append("g");
 
   node.append("circle").attr("r", 5).style('fill', function(d) {
     if (d.type === 'router') {
@@ -214,7 +269,7 @@
   }).style('stroke-width', 2).call(force.drag);
 
   node.append("text").attr("dx", 12).attr("dy", "0.35em").text(function(d) {
-    return d.name;
+    return d.get('name');
   });
 
   force.on('tick', function() {

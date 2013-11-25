@@ -8,3 +8,7 @@ Route = Backbone.Model.extend
 		this.source = source
 		this.target = target
 		this.weight = weight
+
+		this.set('source', source)
+		this.set('target', target)
+		this.set('weight', weight)
