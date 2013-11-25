@@ -1,5 +1,8 @@
 net = new RandomNet()
 
+visible_net = new Net()
+visible_net.devices.push randomFrom(net.clients())
+
 width = $(window).width()
 height = $(window).height()
 
@@ -9,8 +12,8 @@ force = d3.layout.force()
     .charge(-400)
     .linkDistance(20)
     .size([width, height])
-    .nodes(net.devices)
-    .links(net.routes)
+    .nodes(visible_net.devices)
+    .links(visible_net.routes)
     .start()
 
 zoom = ->
@@ -23,13 +26,13 @@ svg = d3.select('body').append('svg')
     .append('g')
 
 link = svg.selectAll(".link")
-    .data(net.routes)
+    .data(visible_net.routes)
     .enter().append("line")
     .attr('class', 'link')
     .style('stroke-width', (d)->Math.sqrt(d.weight))
 
 node = svg.selectAll(".node")
-    .data(net.devices)
+    .data(visible_net.devices)
     .enter().append("g")
 
 node.append("circle")

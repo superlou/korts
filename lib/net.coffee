@@ -12,3 +12,6 @@ Net = Backbone.Model.extend
     	for device in this.devices
     		device.name = i
     		i++
+
+   	clients: ->
+   		(device for device in this.devices when device.type == "client")

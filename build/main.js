@@ -1,5 +1,5 @@
 (function() {
-  var Client, Device, Net, RandomNet, Route, Router, Server, Trunk, color, force, height, link, net, node, random, randomFrom, randomInt, seed, svg, width, zoom;
+  var Client, Device, Net, RandomNet, Route, Router, Server, Trunk, color, force, height, link, net, node, random, randomFrom, randomInt, seed, svg, visible_net, width, zoom;
 
   seed = 10;
 
@@ -78,6 +78,18 @@
         device = _ref[_i];
         device.name = i;
         _results.push(i++);
+      }
+      return _results;
+    },
+    clients: function() {
+      var device, _i, _len, _ref, _results;
+      _ref = this.devices;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        device = _ref[_i];
+        if (device.type === "client") {
+          _results.push(device);
+        }
       }
       return _results;
     }
@@ -167,13 +179,17 @@
 
   net = new RandomNet();
 
+  visible_net = new Net();
+
+  visible_net.devices.push(randomFrom(net.clients()));
+
   width = $(window).width();
 
   height = $(window).height();
 
   color = d3.scale.category20();
 
-  force = d3.layout.force().charge(-400).linkDistance(20).size([width, height]).nodes(net.devices).links(net.routes).start();
+  force = d3.layout.force().charge(-400).linkDistance(20).size([width, height]).nodes(visible_net.devices).links(visible_net.routes).start();
 
   zoom = function() {
     return svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
@@ -181,11 +197,11 @@
 
   svg = d3.select('body').append('svg').attr('width', width).attr('height', height).call(d3.behavior.zoom().scaleExtent([0.1, 8]).on("zoom", zoom)).append('g');
 
-  link = svg.selectAll(".link").data(net.routes).enter().append("line").attr('class', 'link').style('stroke-width', function(d) {
+  link = svg.selectAll(".link").data(visible_net.routes).enter().append("line").attr('class', 'link').style('stroke-width', function(d) {
     return Math.sqrt(d.weight);
   });
 
-  node = svg.selectAll(".node").data(net.devices).enter().append("g");
+  node = svg.selectAll(".node").data(visible_net.devices).enter().append("g");
 
   node.append("circle").attr("r", 5).style('fill', function(d) {
     if (d.type === 'router') {
