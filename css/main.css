@@ -123,6 +123,8 @@ body {
 
 text {
     fill: white;
+    stroke: black;
+    stroke-width: 0.5;
 }
 
 .link {

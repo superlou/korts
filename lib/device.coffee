@@ -12,3 +12,6 @@ Router = Device.extend
 
 Server = Device.extend
 	type: "server"
+
+Client = Device.extend
+	type: "client"

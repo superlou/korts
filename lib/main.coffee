@@ -7,15 +7,20 @@ color = d3.scale.category20()
 
 force = d3.layout.force()
     .charge(-400)
-    .linkDistance(40)
+    .linkDistance(20)
     .size([width, height])
     .nodes(net.devices)
     .links(net.routes)
     .start()
 
+zoom = ->
+    svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
+
 svg = d3.select('body').append('svg')
     .attr('width', width)
     .attr('height', height)
+    .call(d3.behavior.zoom().scaleExtent([0.1, 8]).on("zoom", zoom))
+    .append('g')
 
 link = svg.selectAll(".link")
     .data(net.routes)
@@ -29,7 +34,14 @@ node = svg.selectAll(".node")
 
 node.append("circle")
     .attr("r", 5)
-    .style('fill', (d)->color(d.owner))
+    .style('fill', (d)->
+        if d.type == 'router'
+            'black'
+        else
+            color(d.owner)
+        )
+    .style('stroke', (d)->color(d.owner))
+    .style('stroke-width', 2)
     .call(force.drag)
 
 node.append("text")
