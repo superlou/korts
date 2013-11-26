@@ -9,6 +9,7 @@ executeCommand = (cmd)->
         centerDevice = visibleNet.findDeviceByName(tokens[1])
         scannedNet = net.netAround(centerDevice)
         visibleNet.appendNet(scannedNet)
+        refreshGraph()
 
 
 $('.command').keypress (e)->
@@ -26,14 +27,6 @@ height = $(window).height()
 
 color = d3.scale.category20()
 
-force = d3.layout.force()
-    .charge(-400)
-    .linkDistance(20)
-    .size([width, height])
-    .nodes(visibleNet.get('devices'))
-    .links(visibleNet.get('routes'))
-    .start()
-
 zoom = ->
     svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
 
@@ -43,37 +36,56 @@ svg = d3.select('body').append('svg')
     .call(d3.behavior.zoom().scaleExtent([0.1, 8]).on("zoom", zoom))
     .append('g')
 
-link = svg.selectAll(".link")
-    .data(visibleNet.get('routes'))
-    .enter().append("line")
-    .attr('class', 'link')
-    .style('stroke-width', (d)->Math.sqrt(d.weight))
+force = d3.layout.force()
+    .charge(-400)
+    .linkDistance(20)
+    .size([width, height])
 
-node = svg.selectAll(".node")
-    .data(visibleNet.get('devices'))
-    .enter().append("g")
+refreshGraph = ->
+    console.log visibleNet.get('devices')
+    console.log visibleNet.get('routes')
 
-node.append("circle")
-    .attr("r", 5)
-    .style('fill', (d)->
-        if d.type == 'router'
-            'black'
-        else
-            color(d.owner)
-        )
-    .style('stroke', (d)->color(d.owner))
-    .style('stroke-width', 2)
-    .call(force.drag)
+    node = svg.selectAll(".node")
+        .data(visibleNet.get('devices'), (d)->d.get('id'))
+    
+    nodeG = node.enter().append("g").attr('class', 'node')
+    nodeG.append("circle")
+        .attr("r", 5)
+        .style('fill', (d)->
+            if d.type == 'router'
+                'black'
+            else
+                color(d.owner)
+            )
+        .style('stroke', (d)->color(d.owner))
+        .style('stroke-width', 2)
+        .call(force.drag)
+    nodeG.append("text")
+        .attr("dx", 12)
+        .attr("dy", "0.35em")
+        .text((d)->d.get('name'))
 
-node.append("text")
-    .attr("dx", 12)
-    .attr("dy", "0.35em")
-    .text((d)->d.get('name'))
 
-force.on 'tick', ->
-    link.attr("x1", (d)->d.source.x)
-    link.attr("y1", (d)->d.source.y)
-    link.attr("x2", (d)->d.target.x)
-    link.attr("y2", (d)->d.target.y)
+    link = svg.selectAll(".link")
+        .data(visibleNet.get('routes'), (d)->d.get('id'))
+    
+    link.enter().append("line")
+        .attr('class', 'link')
+        .style('stroke-width', (d)->Math.sqrt(d.weight))
 
-    node.attr("transform", (d)->return "translate(" + d.x + "," + d.y + ")");
+    force
+        .nodes(visibleNet.get('devices'))
+        .links(visibleNet.get('routes'))
+        .start()
+
+    force.on 'tick', ->
+        link.attr("x1", (d)->d.source.x)
+        link.attr("y1", (d)->d.source.y)
+        link.attr("x2", (d)->d.target.x)
+        link.attr("y2", (d)->d.target.y)
+
+        #node.attr('cx', (d)->d.x)
+        #node.attr('cy', (d)->d.y)
+        node.attr("transform", (d)->return "translate(" + d.x + "," + d.y + ")");
+
+refreshGraph()

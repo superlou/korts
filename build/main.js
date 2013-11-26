@@ -1,5 +1,5 @@
 (function() {
-  var Client, Device, Net, RandomNet, Route, Router, Server, Trunk, color, executeCommand, force, height, link, net, node, random, randomFrom, randomInt, seed, svg, visibleNet, width, zoom;
+  var Client, Device, Net, RandomNet, Route, Router, Server, Trunk, color, executeCommand, force, height, net, random, randomFrom, randomInt, refreshGraph, seed, svg, visibleNet, width, zoom;
 
   seed = 10;
 
@@ -41,10 +41,13 @@
   });
 
   Route = Backbone.Model.extend({
-    defaults: {
-      source: null,
-      target: null,
-      weight: 0
+    defaults: function() {
+      return {
+        id: uuid.v1(),
+        source: null,
+        target: null,
+        weight: 0
+      };
     },
     initialize: function(source, target, weight) {
       if (weight == null) {
@@ -55,14 +58,17 @@
       this.weight = weight;
       this.set('source', source);
       this.set('target', target);
-      return this.set('weight', weight);
+      this.set('weight', weight);
+      return this.set('id', uuid.v1());
     }
   });
 
   Net = Backbone.Model.extend({
-    defaults: {
-      devices: [],
-      routes: []
+    defaults: function() {
+      return {
+        devices: [],
+        routes: []
+      };
     },
     appendNet: function(net) {
       this.set('devices', this.get('devices').concat(net.get('devices')));
@@ -225,7 +231,8 @@
     if (tokens[0] === 'scan') {
       centerDevice = visibleNet.findDeviceByName(tokens[1]);
       scannedNet = net.netAround(centerDevice);
-      return visibleNet.appendNet(scannedNet);
+      visibleNet.appendNet(scannedNet);
+      return refreshGraph();
     }
   };
 
@@ -244,50 +251,60 @@
 
   color = d3.scale.category20();
 
-  force = d3.layout.force().charge(-400).linkDistance(20).size([width, height]).nodes(visibleNet.get('devices')).links(visibleNet.get('routes')).start();
-
   zoom = function() {
     return svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
   };
 
   svg = d3.select('body').append('svg').attr('width', width).attr('height', height).call(d3.behavior.zoom().scaleExtent([0.1, 8]).on("zoom", zoom)).append('g');
 
-  link = svg.selectAll(".link").data(visibleNet.get('routes')).enter().append("line").attr('class', 'link').style('stroke-width', function(d) {
-    return Math.sqrt(d.weight);
-  });
+  force = d3.layout.force().charge(-400).linkDistance(20).size([width, height]);
 
-  node = svg.selectAll(".node").data(visibleNet.get('devices')).enter().append("g");
-
-  node.append("circle").attr("r", 5).style('fill', function(d) {
-    if (d.type === 'router') {
-      return 'black';
-    } else {
+  refreshGraph = function() {
+    var link, node, nodeG;
+    console.log(visibleNet.get('devices'));
+    console.log(visibleNet.get('routes'));
+    node = svg.selectAll(".node").data(visibleNet.get('devices'), function(d) {
+      return d.get('id');
+    });
+    nodeG = node.enter().append("g").attr('class', 'node');
+    nodeG.append("circle").attr("r", 5).style('fill', function(d) {
+      if (d.type === 'router') {
+        return 'black';
+      } else {
+        return color(d.owner);
+      }
+    }).style('stroke', function(d) {
       return color(d.owner);
-    }
-  }).style('stroke', function(d) {
-    return color(d.owner);
-  }).style('stroke-width', 2).call(force.drag);
+    }).style('stroke-width', 2).call(force.drag);
+    nodeG.append("text").attr("dx", 12).attr("dy", "0.35em").text(function(d) {
+      return d.get('name');
+    });
+    link = svg.selectAll(".link").data(visibleNet.get('routes'), function(d) {
+      return d.get('id');
+    });
+    link.enter().append("line").attr('class', 'link').style('stroke-width', function(d) {
+      return Math.sqrt(d.weight);
+    });
+    force.nodes(visibleNet.get('devices')).links(visibleNet.get('routes')).start();
+    return force.on('tick', function() {
+      link.attr("x1", function(d) {
+        return d.source.x;
+      });
+      link.attr("y1", function(d) {
+        return d.source.y;
+      });
+      link.attr("x2", function(d) {
+        return d.target.x;
+      });
+      link.attr("y2", function(d) {
+        return d.target.y;
+      });
+      return node.attr("transform", function(d) {
+        return "translate(" + d.x + "," + d.y + ")";
+      });
+    });
+  };
 
-  node.append("text").attr("dx", 12).attr("dy", "0.35em").text(function(d) {
-    return d.get('name');
-  });
-
-  force.on('tick', function() {
-    link.attr("x1", function(d) {
-      return d.source.x;
-    });
-    link.attr("y1", function(d) {
-      return d.source.y;
-    });
-    link.attr("x2", function(d) {
-      return d.target.x;
-    });
-    link.attr("y2", function(d) {
-      return d.target.y;
-    });
-    return node.attr("transform", function(d) {
-      return "translate(" + d.x + "," + d.y + ")";
-    });
-  });
+  refreshGraph();
 
 }).call(this);

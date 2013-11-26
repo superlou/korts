@@ -1,7 +1,9 @@
 Net = Backbone.Model.extend
-    defaults:
-        devices: []
-        routes: []
+    defaults: ->
+        {
+            devices: []
+            routes: []
+        }
 
     appendNet: (net)->
         this.set('devices', this.get('devices').concat(net.get('devices')))

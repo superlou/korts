@@ -1,8 +1,11 @@
 Route = Backbone.Model.extend
-	defaults:
-		source: null
-		target: null
-		weight: 0
+	defaults: ->
+		{
+			id: uuid.v1()
+			source: null
+			target: null
+			weight: 0
+		}
 
 	initialize: (source, target, weight=1)->
 		this.source = source
@@ -12,3 +15,4 @@ Route = Backbone.Model.extend
 		this.set('source', source)
 		this.set('target', target)
 		this.set('weight', weight)
+		this.set('id', uuid.v1())
