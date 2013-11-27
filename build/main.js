@@ -87,7 +87,7 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         device = _ref[_i];
         if (_ref1 = device.get('id'), __indexOf.call(device_ids, _ref1) < 0) {
-          this.get('devices').push(device);
+          this.pushDevice(device);
         }
       }
       route_ids = (function() {
@@ -105,12 +105,18 @@
       for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
         route = _ref2[_j];
         if (_ref3 = route.get('id'), __indexOf.call(route_ids, _ref3) < 0) {
-          _results.push(this.get('routes').push(route));
+          _results.push(this.pushRoute(route));
         } else {
           _results.push(void 0);
         }
       }
       return _results;
+    },
+    pushDevice: function(device) {
+      return this.get('devices').push(device);
+    },
+    pushRoute: function(route) {
+      return this.get('routes').push(route);
     },
     appendNets: function(nets) {
       var net, _i, _len, _results;
@@ -197,7 +203,7 @@
       _results = [];
       for (i = _i = 0, _ref = this.get('devices').length - 1; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
         route = new Route(this.get('devices')[i], this.get('devices')[i + 1], 100);
-        _results.push(this.get('routes').push(route));
+        _results.push(this.pushRoute(route));
       }
       return _results;
     }
@@ -219,22 +225,22 @@
       }
       for (i = _j = 0, _ref = trunks_count - 1; 0 <= _ref ? _j < _ref : _j > _ref; i = 0 <= _ref ? ++_j : --_j) {
         router = new Router();
-        this.get('devices').push(router);
+        this.pushDevice(router);
         device1 = randomFrom(trunks[i].get('devices'));
         device2 = randomFrom(trunks[i + 1].get('devices'));
         route = new Route(device1, router, 10);
-        this.get('routes').push(route);
+        this.pushRoute(route);
         route = new Route(device2, router, 10);
-        this.get('routes').push(route);
+        this.pushRoute(route);
       }
       routers = [];
       for (i = _k = 0, _ref1 = randomInt(1, trunks_count) * 3; 0 <= _ref1 ? _k < _ref1 : _k > _ref1; i = 0 <= _ref1 ? ++_k : --_k) {
         router = new Router();
-        this.get('devices').push(router);
+        this.pushDevice(router);
         routers.push(router);
         trunk_router = randomFrom(randomFrom(trunks).get('devices'));
         route = new Route(router, trunk_router, 10);
-        this.get('routes').push(route);
+        this.pushRoute(route);
       }
       clients = [];
       _results = [];
@@ -246,9 +252,9 @@
           for (i = _m = 3, _ref2 = randomInt(3, 12); 3 <= _ref2 ? _m < _ref2 : _m > _ref2; i = 3 <= _ref2 ? ++_m : --_m) {
             client = new Client();
             clients.push(client);
-            this.get('devices').push(client);
+            this.pushDevice(client);
             route = new Route(client, router);
-            _results1.push(this.get('routes').push(route));
+            _results1.push(this.pushRoute(route));
           }
           return _results1;
         }).call(this));

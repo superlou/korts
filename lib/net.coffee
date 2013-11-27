@@ -10,13 +10,19 @@ Net = Backbone.Model.extend
 
         for device in net.get('devices')
             if device.get('id') not in device_ids
-                this.get('devices').push device
+                this.pushDevice device
 
         route_ids = (r.get('id') for r in this.get('routes'))
 
         for route in net.get('routes')
             if route.get('id') not in route_ids
-                this.get('routes').push route
+                this.pushRoute route
+
+    pushDevice: (device)->
+        this.get('devices').push device
+
+    pushRoute: (route)->
+        this.get('routes').push route
 
     appendNets: (nets)->
         for net in nets
