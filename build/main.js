@@ -1,5 +1,6 @@
 (function() {
-  var Client, Device, Net, RandomNet, Route, Router, Server, Trunk, color, executeCommand, force, height, linksG, net, nodesG, random, randomFrom, randomInt, refreshGraph, seed, svg, visibleNet, width, zoom;
+  var Client, Device, Net, RandomNet, Route, Router, Server, Trunk, color, executeCommand, force, height, linksG, net, nodesG, random, randomFrom, randomInt, refreshGraph, seed, svg, visibleNet, width, zoom,
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   seed = 9;
 
@@ -71,8 +72,45 @@
       };
     },
     appendNet: function(net) {
-      this.set('devices', this.get('devices').concat(net.get('devices')));
-      return this.set('routes', this.get('routes').concat(net.get('routes')));
+      var d, device, device_ids, r, route, route_ids, _i, _j, _len, _len1, _ref, _ref1, _ref2, _ref3, _results;
+      device_ids = (function() {
+        var _i, _len, _ref, _results;
+        _ref = this.get('devices');
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          d = _ref[_i];
+          _results.push(d.get('id'));
+        }
+        return _results;
+      }).call(this);
+      _ref = net.get('devices');
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        device = _ref[_i];
+        if (_ref1 = device.get('id'), __indexOf.call(device_ids, _ref1) < 0) {
+          this.get('devices').push(device);
+        }
+      }
+      route_ids = (function() {
+        var _j, _len1, _ref2, _results;
+        _ref2 = this.get('routes');
+        _results = [];
+        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+          r = _ref2[_j];
+          _results.push(r.get('id'));
+        }
+        return _results;
+      }).call(this);
+      _ref2 = net.get('routes');
+      _results = [];
+      for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+        route = _ref2[_j];
+        if (_ref3 = route.get('id'), __indexOf.call(route_ids, _ref3) < 0) {
+          _results.push(this.get('routes').push(route));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
     },
     appendNets: function(nets) {
       var net, _i, _len, _results;

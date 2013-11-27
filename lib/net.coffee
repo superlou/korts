@@ -6,8 +6,17 @@ Net = Backbone.Model.extend
         }
 
     appendNet: (net)->
-        this.set('devices', this.get('devices').concat(net.get('devices')))
-        this.set('routes', this.get('routes').concat(net.get('routes')))
+        device_ids = (d.get('id') for d in this.get('devices'))
+
+        for device in net.get('devices')
+            if device.get('id') not in device_ids
+                this.get('devices').push device
+
+        route_ids = (r.get('id') for r in this.get('routes'))
+
+        for route in net.get('routes')
+            if route.get('id') not in route_ids
+                this.get('routes').push route
 
     appendNets: (nets)->
         for net in nets
