@@ -272,7 +272,7 @@
   executeCommand = function(cmd) {
     var centerDevice, scannedNet, tokens;
     tokens = cmd.split(' ');
-    if (tokens[0] === 'scan') {
+    if (tokens[0] === 'scan' || tokens[0] === 's') {
       centerDevice = visibleNet.findDeviceByName(tokens[1]);
       scannedNet = net.netAround(centerDevice);
       visibleNet.appendNet(scannedNet);

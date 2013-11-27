@@ -5,7 +5,7 @@ visibleNet.get('devices').push randomFrom(net.clients())
 
 executeCommand = (cmd)->
     tokens = cmd.split(' ')
-    if tokens[0] == 'scan'
+    if tokens[0] == 'scan' or tokens[0] == 's'
         centerDevice = visibleNet.findDeviceByName(tokens[1])
         scannedNet = net.netAround(centerDevice)
         visibleNet.appendNet(scannedNet)
