@@ -36,6 +36,9 @@ svg = d3.select('body').append('svg')
     .call(d3.behavior.zoom().scaleExtent([0.1, 8]).on("zoom", zoom))
     .append('g')
 
+linksG = svg.append('g').attr('class', 'links')
+nodesG = svg.append('g').attr('class', 'nodes')
+
 force = d3.layout.force()
     .charge(-400)
     .linkDistance(20)
@@ -45,7 +48,7 @@ refreshGraph = ->
     console.log visibleNet.get('devices')
     console.log visibleNet.get('routes')
 
-    node = svg.selectAll(".node")
+    node = nodesG.selectAll(".node")
         .data(visibleNet.get('devices'), (d)->d.get('id'))
     
     nodeG = node.enter().append("g").attr('class', 'node')
@@ -66,7 +69,7 @@ refreshGraph = ->
         .text((d)->d.get('name'))
 
 
-    link = svg.selectAll(".link")
+    link = linksG.selectAll(".link")
         .data(visibleNet.get('routes'), (d)->d.get('id'))
     
     link.enter().append("line")

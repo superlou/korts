@@ -1,4 +1,4 @@
-seed = 10
+seed = 9
 random = ->
 	x = Math.sin(seed++) * 10000;
 	return x - Math.floor(x)

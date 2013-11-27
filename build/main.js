@@ -1,7 +1,7 @@
 (function() {
-  var Client, Device, Net, RandomNet, Route, Router, Server, Trunk, color, executeCommand, force, height, net, random, randomFrom, randomInt, refreshGraph, seed, svg, visibleNet, width, zoom;
+  var Client, Device, Net, RandomNet, Route, Router, Server, Trunk, color, executeCommand, force, height, linksG, net, nodesG, random, randomFrom, randomInt, refreshGraph, seed, svg, visibleNet, width, zoom;
 
-  seed = 10;
+  seed = 9;
 
   random = function() {
     var x;
@@ -257,13 +257,17 @@
 
   svg = d3.select('body').append('svg').attr('width', width).attr('height', height).call(d3.behavior.zoom().scaleExtent([0.1, 8]).on("zoom", zoom)).append('g');
 
+  linksG = svg.append('g').attr('class', 'links');
+
+  nodesG = svg.append('g').attr('class', 'nodes');
+
   force = d3.layout.force().charge(-400).linkDistance(20).size([width, height]);
 
   refreshGraph = function() {
     var link, node, nodeG;
     console.log(visibleNet.get('devices'));
     console.log(visibleNet.get('routes'));
-    node = svg.selectAll(".node").data(visibleNet.get('devices'), function(d) {
+    node = nodesG.selectAll(".node").data(visibleNet.get('devices'), function(d) {
       return d.get('id');
     });
     nodeG = node.enter().append("g").attr('class', 'node');
@@ -279,7 +283,7 @@
     nodeG.append("text").attr("dx", 12).attr("dy", "0.35em").text(function(d) {
       return d.get('name');
     });
-    link = svg.selectAll(".link").data(visibleNet.get('routes'), function(d) {
+    link = linksG.selectAll(".link").data(visibleNet.get('routes'), function(d) {
       return d.get('id');
     });
     link.enter().append("line").attr('class', 'link').style('stroke-width', function(d) {
