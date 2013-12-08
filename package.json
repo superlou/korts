@@ -1,6 +1,11 @@
 {
-  "name": "keybooard-only-rts",
+  "name": "KORTS",
   "version": "0.1.0",
+  "description": "King-of-the-network real-time-strategy game played without a mouse",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/superlou/korts"
+  },
   "devDependencies": {
     "grunt": "~0.4.2",
     "grunt-contrib-coffee": "~0.7.0",
@@ -9,6 +14,10 @@
     "underscore": "~1.5.2",
     "backbone": "~1.1.0",
     "grunt-execute": "~0.1.5",
-    "uuid": "~1.4.1"
+    "uuid": "~1.4.1",
+    "grunt-concurrent": "~0.4.2",
+    "connect": "~2.11.2",
+    "express": "~3.4.6",
+    "grunt-nodemon": "~0.1.2"
   }
 }

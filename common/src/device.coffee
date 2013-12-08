@@ -8,10 +8,28 @@ Device = Backbone.Model.extend
 		}
 
 Router = Device.extend
-	type: "router"   
+	defaults: ->
+		{
+			id: uuid.v1()
+			name: ""
+			type: "router"
+			owner: 0
+		} 
 
 Server = Device.extend
-	type: "server"
+	defaults: ->
+		{
+			id: uuid.v1()
+			name: ""
+			type: "server"
+			owner: 0
+		}
 
 Client = Device.extend
-	type: "client"
+	defaults: ->
+		{
+			id: uuid.v1()
+			name: ""
+			type: "client"
+			owner: 0
+		}

@@ -1,28 +1,24 @@
 Net = Backbone.Model.extend
     defaults: ->
         {
-            devices: []
-            routes: []
+            deviceIds: []
+            routeIds: []
         }
 
     appendNet: (net)->
-        device_ids = (d.get('id') for d in this.get('devices'))
+        for deviceId in net.get('deviceIds')
+            if deviceId not in @get('deviceIds')
+                @addDeviceId deviceId
 
-        for device in net.get('devices')
-            if device.get('id') not in device_ids
-                this.pushDevice device
+        for routeId in net.get('routeIds')
+            if routeId not in @get('routeIds')
+                @addRouteId routeId
 
-        route_ids = (r.get('id') for r in this.get('routes'))
+    addDeviceId: (deviceId)->
+        @get('deviceIds').push deviceId
 
-        for route in net.get('routes')
-            if route.get('id') not in route_ids
-                this.pushRoute route
-
-    pushDevice: (device)->
-        this.get('devices').push device
-
-    pushRoute: (route)->
-        this.get('routes').push route
+    addRouteId: (routeId)->
+        @get('routeIds').push routeId
 
     appendNets: (nets)->
         for net in nets
@@ -30,31 +26,40 @@ Net = Backbone.Model.extend
 
     nameDevices: ->
         i = 1
-        for device in this.get('devices')
+        for deviceId in @get('deviceIds')
+            device = store.find(deviceId)
             device.set('name', String(i))
             i++
 
     findDeviceByName: (name)->
-        for device in this.get('devices')
+        for deviceId in @get('deviceIds')
+            device = store.find(deviceId)
             return device if device.get('name') == name
 
         null
 
+    devices: ->
+        store.find(@get('deviceIds'))
+
+    routes: ->
+        store.find(@get('routeIds'))
+
     clients: ->
-        (device for device in this.get('devices') when device.type == "client")
+        (store.find(deviceId) for deviceId in @get('deviceIds') when store.find(deviceId).get('type') == "client")
 
     netAround: (device)->
-        neighborRoutes = []
-        neighborDevices = []
+        neighborRouteIds = []
+        neighborDeviceIds = []
 
-        for route in this.get('routes')
-            if route.get('source') == device
-                neighborRoutes.push route
-                neighborDevices.push route.get('target')
+        for routeId in @get('routeIds')
+            route = store.find(routeId)
+            if route.get('sourceId') == device.id
+                neighborRouteIds.push routeId
+                neighborDeviceIds.push route.get('targetId')
 
-            if route.get('target') == device
-                neighborRoutes.push route
-                neighborDevices.push route.get('source')
+            if route.get('targetId') == device.id
+                neighborRouteIds.push routeId
+                neighborDeviceIds.push route.get('sourceId')
 
-        new Net({devices: neighborDevices, routes: neighborRoutes})
+        new Net({deviceIds: neighborDeviceIds, routeIds: neighborRouteIds})
 

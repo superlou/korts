@@ -3,11 +3,18 @@ Trunk = Net.extend
         this.generateTrunk()
 
     generateTrunk: ()->
-        devices = for i in [0..randomInt(3,8)]
-            new Router()
+        deviceIds = for i in [0..randomInt(3,8)]
+            router = new Router()
+            store.add(router)
+            router.id
 
-        this.set('devices', devices)
+        this.set('deviceIds', deviceIds)
 
-        for i in [0...this.get('devices').length-1]
-            route = new Route(this.get('devices')[i], this.get('devices')[i+1], 100)
-            this.pushRoute route
+        for i in [0...@get('deviceIds').length-1]
+            route = new Route
+            	sourceId: @get('deviceIds')[i]
+            	targetId: @get('deviceIds')[i+1]
+            	weight: 100
+
+            store.add(route)
+            this.addRouteId route.id

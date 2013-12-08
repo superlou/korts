@@ -8,6 +8,7 @@ module.exports = (grunt)->
                 files:
                     'client/build/main.js': [
                         'common/src/utils.coffee'
+                        'common/src/dumb-store.coffee'
                         'common/src/device.coffee'
                         'common/src/route.coffee'
                         'common/src/net.coffee'
@@ -18,6 +19,7 @@ module.exports = (grunt)->
                     'server/build/server.js': [
                         'server/src/requires.coffee'
                         'common/src/utils.coffee'
+                        'common/src/dumb-store.coffee'
                         'common/src/device.coffee'
                         'common/src/route.coffee'
                         'common/src/net.coffee'
@@ -34,16 +36,25 @@ module.exports = (grunt)->
                 ]
                 tasks: 'coffee'
 
+        nodemon:
+            dev:
+                options: 
+                    file: 'server/build/server.js'
+                    env:
+                        PORT: '8000'
+
+        concurrent:
+            dev: 
+                tasks: ['watch', 'nodemon:dev']
+                options:
+                    logConcurrentOutput: true
+
 
     grunt.loadNpmTasks('grunt-contrib-coffee')
     grunt.loadNpmTasks('grunt-contrib-watch')
     grunt.loadNpmTasks('grunt-execute')
+    grunt.loadNpmTasks('grunt-concurrent')
+    grunt.loadNpmTasks('grunt-nodemon')
 
     grunt.registerTask('default', ['coffee'])
-    grunt.registerTask('server', ->
-        done = this.async()
-        grunt.log.writeln('Starting server.')
-        require('./server/build/server.js').listen(8000).on('close', done)
-        )
-
-    grunt.registerTask('run', 'server watch')
+    grunt.registerTask('dev', ['concurrent:dev'])

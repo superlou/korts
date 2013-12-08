@@ -2,17 +2,20 @@ Route = Backbone.Model.extend
 	defaults: ->
 		{
 			id: uuid.v1()
-			source: null
-			target: null
+			sourceId: null
+			targetId: null
 			weight: 0
+			type: 'route'
 		}
 
-	initialize: (source, target, weight=1)->
-		this.source = source
-		this.target = target
-		this.weight = weight
+	initialize: (attrs)->
+		Backbone.Model.prototype.initialize.call(this, attrs)
 
-		this.set('source', source)
-		this.set('target', target)
-		this.set('weight', weight)
-		this.set('id', uuid.v1())
+		if attrs.weight
+			this.weight = attrs.weight
+		else
+			this.weight = 1
+
+	updateEndpoints: ->
+		this.source = store.find(@get 'sourceId')
+		this.target = store.find(@get 'targetId')
